@@ -94,6 +94,7 @@ DATABASES = {
         'PORT': '3306',  # Port de connexion MySQL/MariaDB
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",  # Option pour MariaDB (recommandé)
+            'charset': 'utf8mb4',
         },
     }
 }

@@ -19,4 +19,7 @@ urlpatterns = [
     path('contact/', views.contact_view, name='contact'),
     path('livres/', views.livres_view, name='livres'),  # URL pour la page des livres
     path('livres/<int:livre_id>/', views.livre_detail, name='livre_detail'),  # URL pour le détail d'un livre
+    path('forum/', views.forum_view, name='forum'),
+    path('forum/topic/<int:topic_id>/', views.topic_detail, name='topic_detail'),
+
 ]

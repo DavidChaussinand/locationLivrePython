@@ -7,11 +7,12 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .forms import SignUpForm , EmailLoginForm , ContactForm , CommentaireForm
+from .forms import SignUpForm , EmailLoginForm , ContactForm , CommentaireForm ,MessageForm
 from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
 from django.core.mail import send_mail
 from .models import Livre , Commentaire
 from django.db.models import Q
+from .models import Topic, Message
 
 
 def home(request):
@@ -181,3 +182,29 @@ def livre_detail(request, livre_id):
         'form': form
     }
     return render(request, 'main/livre_detail.html', context)
+
+
+
+
+def forum_view(request):
+        topics = Topic.objects.all()
+        return render(request, 'main/forum.html', {'topics': topics})
+    
+def topic_detail(request, topic_id):
+    topic = get_object_or_404(Topic, id=topic_id)
+    messages = topic.messages.order_by('-created_at')  # Trier par date de création descendante
+
+    if request.method == 'POST':
+        if request.user.is_authenticated:
+            form = MessageForm(request.POST)
+            if form.is_valid():
+                message = form.save(commit=False)
+                message.topic = topic
+                message.author = request.user
+                message.save()
+                return redirect('topic_detail', topic_id=topic.id)
+        else:
+            return redirect('login')
+
+    form = MessageForm()
+    return render(request, 'main/topic_detail.html', {'topic': topic, 'messages': messages, 'form': form})

@@ -44,3 +44,25 @@ class Commentaire(models.Model):
 
     def __str__(self):
         return f"Commentaire de {self.user.username} sur {self.livre.titre}"
+
+
+
+class Topic(models.Model):
+    title = models.CharField(max_length=200, verbose_name="Titre")
+    content = models.TextField(verbose_name="Contenu")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
+    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Auteur")
+
+    def __str__(self):
+        return self.title
+    
+
+
+class Message(models.Model):
+    topic = models.ForeignKey('Topic', on_delete=models.CASCADE, related_name='messages')
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField(verbose_name='Contenu du message')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Message de {self.author.username} sur {self.topic.title}"

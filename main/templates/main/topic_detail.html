@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ topic.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>{{ topic.title }}</h2>
+    <p><strong>Créé par :</strong> {{ topic.author.username }}</p>
+    <p><strong>Publié le :</strong> {{ topic.created_at|date:"d M Y" }}</p>
+    <hr>
+    <p>{{ topic.content }}</p>
+
+    <h3>Messages :</h3>
+    {% for message in messages %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <p><strong>{{ message.author.username }}</strong> <small class="text-muted">{{ message.created_at }}</small></p>
+                <p>{{ message.content }}</p>
+            </div>
+        </div>
+    {% endfor %}
+
+    {% if user.is_authenticated %}
+        <h4 class="mt-5">Répondre à la discussion</h4>
+        <div class="card shadow-lg mb-4">
+            <div class="card-body">
+                <p><strong>{{ user.username }}</strong>, tu peux répondre ici :</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        {{ form.content.label_tag }}
+                        {{ form.content }}
+                    </div>                  
+                    <button type="submit" class="btn btn-primary">Publier</button>
+                </form>
+            </div>
+        </div>
+    {% else %}
+        <p>Vous devez <a href="{% url 'login' %}">vous connecter</a> pour laisser un message.</p>
+    {% endif %}
+</div>
+{% endblock %}

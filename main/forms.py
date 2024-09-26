@@ -3,7 +3,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate,  get_user_model
-from .models import Commentaire , Livre
+from .models import Commentaire , Livre , Message
 
 class SignUpForm(UserCreationForm):
     first_name = forms.CharField(max_length=30, required=True, help_text='Veuillez entrer votre prénom.')
@@ -146,3 +146,11 @@ class LivreForm(forms.ModelForm):
         if commit:
             livre.save()
         return livre
+    
+class MessageForm(forms.ModelForm):
+    class Meta:
+        model = Message
+        fields = ['content']
+        widgets = {
+            'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Écris ton message ici...'}),
+        }
