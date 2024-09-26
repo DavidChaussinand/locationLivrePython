@@ -127,12 +127,11 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
+LANGUAGE_CODE = 'fr'
+TIME_ZONE = 'Europe/Paris'
 
 USE_I18N = True
-
+USE_L10N = True
 USE_TZ = True
 
 
@@ -171,7 +170,9 @@ import environ
 
 # Initialise l'environnement
 env = environ.Env()
-environ.Env.read_env()
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
+
 
 # Utilisation des variables d'environnement
 EMAIL_BACKEND = env('EMAIL_BACKEND')
@@ -181,6 +182,7 @@ EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS')
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')
+
 
 
 

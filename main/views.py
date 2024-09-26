@@ -138,7 +138,7 @@ def livres_view(request):
     query = request.GET.get('q', '')  # Récupère le texte de recherche
     categories = request.GET.getlist('categories')  # Récupère les catégories sélectionnées
     
-    livres = Livre.objects.all()
+    livres = Livre.objects.all().order_by('-id')
 
     if query:
         livres = livres.filter(

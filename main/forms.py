@@ -3,7 +3,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate,  get_user_model
-from .models import Commentaire
+from .models import Commentaire , Livre
 
 class SignUpForm(UserCreationForm):
     first_name = forms.CharField(max_length=30, required=True, help_text='Veuillez entrer votre prénom.')
@@ -119,3 +119,30 @@ class CommentaireForm(forms.ModelForm):
             'contenu': 'Votre avis',
             'note': 'Note (0 à 5)',
         }
+
+
+class LivreForm(forms.ModelForm):
+    image_upload = forms.ImageField(required=False, label="Télécharger une image")
+
+    class Meta:
+        model = Livre
+        fields = '__all__'
+
+    def save(self, commit=True):
+        livre = super().save(commit=False)
+        if self.cleaned_data.get('image_upload'):
+            image = self.cleaned_data['image_upload']
+            image_name = f"couvertures/{image.name}"
+            image_path = f"media/{image_name}"
+            
+            # Sauvegarde du fichier
+            with open(image_path, 'wb+') as destination:
+                for chunk in image.chunks():
+                    destination.write(chunk)
+            
+            # Mise à jour du champ couverture
+            livre.couverture = image_name
+        
+        if commit:
+            livre.save()
+        return livre
