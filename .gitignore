@@ -1,0 +1,18 @@
+# Ignore le fichier .env contenant les informations sensibles
+.env
+
+# Ignore les fichiers de l'environnement virtuel
+env/
+venv/
+.venv/
+
+# Ignore les fichiers de configuration de l'éditeur
+.vscode/
+.idea/
+
+# Ignore les fichiers de base de données locales
+*.sqlite3
+
+# Ignore les fichiers de cache
+__pycache__/
+*.pyc

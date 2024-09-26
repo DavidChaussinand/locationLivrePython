@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load range_filter %}
+{% load rating_filters %}
+
+
+{% block title %}{{ livre.titre }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">{{ livre.titre }}</h2>
+    <div class="row mb-5">
+        <div class="col-md-6">
+            <img src="{{ MEDIA_URL }}{{ livre.couverture }}" class="img-fluid" alt="{{ livre.titre }}">
+        </div>
+        <div class="col-md-6">
+            <h3>Auteur: {{ livre.auteur }}</h3>
+            <p><strong>Date de publication :</strong> {{ livre.date_publication }}</p>
+            <p><strong>Catégorie :</strong> {{ livre.categorie }}</p>
+            <p><strong>Résumé :</strong> {{ livre.resume }}</p>
+            <p><strong>Description :</strong> {{ livre.description }}</p>
+            <br><br>
+            <p><strong>Prix :</strong> {{ livre.prix }} €</p>
+        </div>
+    </div>
+    
+    <hr>
+
+    <!-- Section des commentaires -->
+    <h3>Avis des lecteurs :</h3>
+    {% for commentaire in commentaires %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <p>
+                <strong>{{ commentaire.user.username }}</strong> 
+                <small class="text-muted">{{ commentaire.date }}</small> <br>
+                <!-- Affichage des étoiles -->
+                <span>
+                    {% for i in 1|range:6 %}
+                        {% with star=commentaire.note|star_rating:i %}
+                            {% if star == "full" %}
+                                <i class="fas fa-star text-warning"></i>  <!-- Ajoute 'text-warning' -->
+                            {% elif star == "half" %}
+                                <i class="fas fa-star-half-alt text-warning"></i>  <!-- Ajoute 'text-warning' -->
+                            {% else %}
+                                <i class="far fa-star text-warning"></i>  <!-- Ajoute 'text-warning' -->
+                            {% endif %}
+                        {% endwith %}
+                    {% endfor %}
+                </span>
+                
+            </p>
+            <p>" {{ commentaire.contenu }} "</p>
+        </div>
+    </div>
+    {% empty %}
+    <p>Soyez le premier à laisser un avis sur ce livre !</p>
+    {% endfor %}
+
+    <!-- Formulaire pour ajouter un commentaire -->
+    {% if user.is_authenticated %}
+    <h4>Laisser un commentaire</h4>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            {{ form.contenu.label_tag }} <br>
+            {{ form.contenu }}
+        </div>
+        <div class="form-group">
+            {{ form.note.label_tag }} <br>
+            {{ form.note }}
+        </div>
+        <button type="submit" class="btn btn-primary">Publier</button>
+    </form>
+    {% else %}
+    <p>Vous devez <a href="{% url 'login' %}">vous connecter</a> pour laisser un commentaire.</p>
+    {% endif %}
+
+</div>
+{% endblock %}

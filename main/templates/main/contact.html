@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load bootstrap_filters %}
+
+{% block title %}Contact{% endblock %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="card shadow-lg" style="width: 100%; max-width: 600px;">
+        <div class="card-body">
+            <h2 class="card-title text-center">Contactez-nous</h2>
+            <p class="text-center">Veuillez remplir le formulaire ci-dessous pour nous contacter.</p>
+
+            <!-- Afficher les messages de succès ou d'erreur -->
+            {% if messages %}
+                <div class="alert alert-info">
+                    {% for message in messages %}
+                        {{ message }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <!-- Champ Nom -->
+                <div class="form-group">
+                    <label for="{{ form.nom.id_for_label }}">Nom</label>
+                    {{ form.nom|attr:"class:form-control" }}
+                    {% if form.nom.errors %}
+                    <div class="text-danger">
+                        {{ form.nom.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Champ Prénom -->
+                <div class="form-group">
+                    <label for="{{ form.prenom.id_for_label }}">Prénom</label>
+                    {{ form.prenom|attr:"class:form-control" }}
+                    {% if form.prenom.errors %}
+                    <div class="text-danger">
+                        {{ form.prenom.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Champ Adresse e-mail -->
+                <div class="form-group">
+                    <label for="{{ form.email.id_for_label }}">Adresse e-mail</label>
+                    {{ form.email|attr:"class:form-control" }}
+                    {% if form.email.errors %}
+                    <div class="text-danger">
+                        {{ form.email.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Champ Numéro de téléphone -->
+                <div class="form-group">
+                    <label for="{{ form.telephone.id_for_label }}">Numéro de téléphone</label>
+                    {{ form.telephone|attr:"class:form-control" }}
+                    {% if form.telephone.errors %}
+                    <div class="text-danger">
+                        {{ form.telephone.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Champ Motif de la demande (Sélection) -->
+                <div class="form-group">
+                    <label for="{{ form.sujet.id_for_label }}">Motif de la demande</label>
+                    {{ form.sujet|attr:"class:form-control" }}
+                    {% if form.sujet.errors %}
+                    <div class="text-danger">
+                        {{ form.sujet.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Champ Contenu -->
+                <div class="form-group">
+                    <label for="{{ form.message.id_for_label }}">Contenu</label>
+                    {{ form.message|attr:"class:form-control" }}
+                    {% if form.message.errors %}
+                    <div class="text-danger">
+                        {{ form.message.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block">Envoyer</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

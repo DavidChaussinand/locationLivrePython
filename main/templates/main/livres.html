@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Tous les livres{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Tous les livres</h2>
+
+    <form method="GET" action="{% url 'livres' %}" class="mb-4">
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" name="q" placeholder="Rechercher un livre ou un auteur..." aria-label="Rechercher">
+            <div class="input-group-append">
+                <button class="btn btn-primary" type="submit">Rechercher</button>
+            </div>
+        </div>
+        
+        <div class="mb-4 d-flex flex-wrap">
+           
+            {% for code, label in category_choices %}
+            <div class="form-check mr-3">
+                <input class="form-check-input" type="checkbox" name="categories" value="{{ code }}" id="cat-{{ code }}" {% if code in categories %}checked{% endif %}>
+                <label class="form-check-label" for="cat-{{ code }}">
+                    {{ label }}
+                </label>
+            </div>
+            {% endfor %}
+        </div>
+    </form>
+    
+    
+
+
+    <div class="row">
+        {% for livre in livres %}
+        <div class="col-12 col-md-6 col-lg-4 mb-4">
+            <a href="{% url 'livre_detail' livre.id %}" class="text-decoration-none">
+                <div class="card shadow-lg" style="width: 20rem; height: 525px">
+                    <img src="{{ MEDIA_URL }}{{ livre.couverture }}" class="card-img-top" alt="{{ livre.titre }}" style="height: 400px; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title text-center">{{ livre.titre }}</h5>
+                        <p class="card-text text-center">{{ livre.resume|truncatewords:15 }}</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
