@@ -7,12 +7,12 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .forms import SignUpForm , EmailLoginForm , ContactForm , CommentaireForm ,MessageForm
+from .forms import SignUpForm , EmailLoginForm , ContactForm , CommentaireForm ,MessageForm, LocationForm , ProlongationLocationForm
 from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
 from django.core.mail import send_mail
-from .models import Livre , Commentaire
+from .models import Livre , Commentaire ,Topic, Message , Location
 from django.db.models import Q
-from .models import Topic, Message
+
 
 
 def home(request):
@@ -138,7 +138,8 @@ def contact_view(request):
 def livres_view(request):
     query = request.GET.get('q', '')  # Récupère le texte de recherche
     categories = request.GET.getlist('categories')  # Récupère les catégories sélectionnées
-    
+    disponible = request.GET.get('disponible')  # Récupère la valeur de la case à cocher 'disponible'
+
     livres = Livre.objects.all().order_by('-id')
 
     if query:
@@ -149,13 +150,16 @@ def livres_view(request):
     if categories:
         livres = livres.filter(categorie__in=categories)
 
-    # Passe les choix de catégorie et les catégories sélectionnées au template
+    if disponible:
+        livres = livres.filter(disponible=True)
+
     context = {
         'livres': livres,
         'categories': categories,
-        'category_choices': Livre.CATEGORIES_CHOICES,  # Ajoute les choix de catégories ici
+        'category_choices': Livre.CATEGORIES_CHOICES,
     }
     return render(request, 'main/livres.html', context)
+
 
 def livre_detail(request, livre_id):
     livre = get_object_or_404(Livre, id=livre_id)
@@ -215,3 +219,63 @@ def topic_detail(request, topic_id):
 def location_livre(request, livre_id):
     livre = get_object_or_404(Livre, id=livre_id)
     return render(request, 'main/location_livre.html', {'livre': livre})
+
+
+@login_required
+def reserver_livre(request, livre_id):
+    livre = get_object_or_404(Livre, id=livre_id)
+    if not livre.disponible:
+        messages.error(request, "Ce livre n'est pas disponible.")
+        return redirect('livres')
+
+    if request.method == 'POST':
+        form = LocationForm(request.POST)
+        if form.is_valid():
+            location = form.save(commit=False)
+            location.user = request.user
+            location.livre = livre
+            location.save()
+            livre.disponible = False
+            livre.save()
+            messages.success(request, "Réservation effectuée avec succès.")
+            return redirect('profile')
+    else:
+        form = LocationForm()
+    return render(request, 'main/location_livre.html', {'livre': livre, 'form': form})
+
+
+
+
+
+@login_required
+def profile_view(request):
+    locations = Location.objects.filter(user=request.user).order_by('-date_debut')
+    return render(request, 'main/profile.html', {'locations': locations})
+
+
+@login_required
+def annuler_location(request, location_id):
+    location = get_object_or_404(Location, id=location_id, user=request.user, statut='Réservé')
+    location.delete()
+    location.livre.disponible = True
+    location.livre.save()
+    messages.success(request, "Réservation annulée.")
+    return redirect('profile')
+
+# views.py
+@login_required
+def prolonger_location(request, location_id):
+    location = get_object_or_404(Location, id=location_id, user=request.user)
+
+    if request.method == 'POST':
+        form = ProlongationLocationForm(request.POST, instance=location)
+        if form.is_valid():
+            # Seule la date de fin est modifiée
+            location.date_fin = form.cleaned_data['date_fin']
+            location.save()
+            messages.success(request, "Location prolongée avec succès.")
+            return redirect('profile')
+    else:
+        form = ProlongationLocationForm(instance=location)
+
+    return render(request, 'main/prolonger_location.html', {'form': form, 'location': location})

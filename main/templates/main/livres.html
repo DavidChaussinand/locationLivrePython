@@ -13,9 +13,8 @@
                 <button class="btn btn-primary" type="submit">Rechercher</button>
             </div>
         </div>
-        
-        <div class="mb-4 d-flex flex-wrap">
-           
+    
+        <div class="d-flex flex-wrap align-items-center mb-4">
             {% for code, label in category_choices %}
             <div class="form-check mr-3">
                 <input class="form-check-input" type="checkbox" name="categories" value="{{ code }}" id="cat-{{ code }}" {% if code in categories %}checked{% endif %}>
@@ -24,8 +23,15 @@
                 </label>
             </div>
             {% endfor %}
+    
+            <div class="form-check ml-auto">
+                <input class="form-check-input" type="checkbox" name="disponible" id="disponible" value="1" {% if 'disponible' in request.GET %}checked{% endif %}>
+                <label class="form-check-label" for="disponible">Afficher seulement les livres disponibles</label>
+            </div>
         </div>
     </form>
+    
+    
     
     
 

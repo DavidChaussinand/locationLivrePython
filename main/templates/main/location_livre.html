@@ -1,10 +1,24 @@
 {% extends 'base.html' %}
-
-{% block title %}Louer {{ livre.titre }}{% endblock %}
+{% block title %}Réservation - {{ livre.titre }}{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
-    <h3>Vous allez louer le livre : {{ livre.titre }}</h3>
-    <p>Merci de suivre les instructions pour finaliser la location.</p>
+    {% if user.is_authenticated %}
+    <p><strong>Utilisateur :</strong> {{ user.username }}</p>
+    {% endif %}
+    <h2>Réserver le livre : {{ livre.titre }}</h2>
+    <form method="post" action="{% url 'reservation_livre' livre.id %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="id_date_debut">Date de début</label>
+            {{ form.date_debut }}
+        </div>
+        <div class="form-group">
+            <label for="id_date_fin">Date de fin</label>
+            {{ form.date_fin }}
+        </div>
+        <button type="submit" class="btn btn-success">Réserver</button>
+    </form>
+    
 </div>
 {% endblock %}

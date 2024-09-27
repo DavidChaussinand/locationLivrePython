@@ -66,3 +66,14 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Message de {self.author.username} sur {self.topic.title}"
+    
+
+class Location(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    livre = models.ForeignKey(Livre, on_delete=models.CASCADE)
+    date_debut = models.DateField()
+    date_fin = models.DateField()
+    statut = models.CharField(max_length=20, choices=[('Réservé', 'Réservé'), ('En cours', 'En cours'), ('Terminé', 'Terminé')], default='Réservé')
+    
+    def __str__(self):
+        return f"{self.livre.titre} loué par {self.user.username}"

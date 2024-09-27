@@ -3,7 +3,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate,  get_user_model
-from .models import Commentaire , Livre , Message
+from .models import Commentaire , Livre , Message , Location
 
 class SignUpForm(UserCreationForm):
     first_name = forms.CharField(max_length=30, required=True, help_text='Veuillez entrer votre prénom.')
@@ -153,4 +153,24 @@ class MessageForm(forms.ModelForm):
         fields = ['content']
         widgets = {
             'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Écris ton message ici...'}),
+        }
+
+
+
+class LocationForm(forms.ModelForm):
+    class Meta:
+        model = Location
+        fields = ['date_debut', 'date_fin']
+        widgets = {
+            'date_debut': forms.DateInput(attrs={'type': 'date'}),
+            'date_fin': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+
+class ProlongationLocationForm(forms.ModelForm):
+    class Meta:
+        model = Location
+        fields = ['date_fin']
+        widgets = {
+            'date_fin': forms.DateInput(attrs={'type': 'date'}),
         }

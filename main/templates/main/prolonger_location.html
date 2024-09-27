@@ -1,0 +1,26 @@
+<!-- prolonger_location.html -->
+{% extends 'base.html' %}
+{% block title %}Prolonger la location{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Prolonger la location de : {{ location.livre.titre }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Date de début</label>
+            <input type="text" class="form-control" value="{{ location.date_debut }}" readonly>
+        </div>
+        <div class="form-group">
+            <label for="id_date_fin">Nouvelle date de fin</label>
+            {{ form.date_fin }}
+        </div>
+        <button type="submit" class="btn btn-warning">Prolonger</button>
+    </form>
+    {% if form.errors %}
+    <div class="alert alert-danger">
+        {{ form.errors }}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

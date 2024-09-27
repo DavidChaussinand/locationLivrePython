@@ -8,7 +8,8 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),  # Page de connexion
     path('signup/', views.signup_view, name='signup'),  # Page d'inscription
     path('logout/', views.logout_view, name='logout'),  # Déconnexion personnalisée
-    path('profile/', views.profile, name='profile'),  # Page de profil protégée
+    path('profile/', views.profile_view, name='profile'),  # Assurez-vous que le nom de la vue est correct.
+
 
     # URLs pour la réinitialisation de mot de passe avec des vues basées sur les fonctions
     path('password_reset/', views.password_reset, name='password_reset'),
@@ -23,6 +24,14 @@ urlpatterns = [
     path('forum/topic/<int:topic_id>/', views.topic_detail, name='topic_detail'),
     
     path('livres/location/<int:livre_id>/', views.location_livre, name='location_livre'),
+    path('annuler_location/<int:location_id>/', views.annuler_location, name='annuler_location'),
+    path('reservation/<int:livre_id>/', views.reserver_livre, name='reservation_livre'),
+    path('prolonger_location/<int:location_id>/', views.prolonger_location, name='prolonger_location'),
+
+
+
+   
+
 
 
 ]

@@ -7,4 +7,27 @@
     <h2>Bienvenue, {{ user.first_name }} {{ user.last_name }} !</h2>
     <p>Ceci est votre page de profil. Vous êtes connecté avec l'adresse e-mail : {{ user.email }}</p>
 </div>
+
+
+<div class="container mt-5">
+    <h2>Vos réservations</h2>
+    {% if locations %}
+    <ul>
+        {% for location in locations %}
+            <li>
+                <strong>{{ location.livre.titre }}</strong> <br>
+                Du {{ location.date_debut }} au {{ location.date_fin }} <br>
+                Statut : {{ location.statut }} <br>
+                <a href="{% url 'annuler_location' location.id %}" class="btn btn-danger btn-sm">Annuler</a>
+                <a href="{% url 'prolonger_location' location.id %}" class="btn btn-warning btn-sm">Prolonger</a>
+            </li>
+        {% endfor %}
+    
+    </ul>
+{% else %}
+    <p>Vous n'avez aucune réservation en cours.</p>
+{% endif %}
+
+
+</div>
 {% endblock %}
