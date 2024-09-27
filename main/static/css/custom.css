@@ -5,4 +5,28 @@
       max-width: 20%;
     }
   }
-  
+
+
+
+
+  /* Styles pour les badges */
+.badge-disponible, .badge-indisponible {
+  position: absolute;
+  bottom: -3px;
+  right: -21px;
+  transform: rotate(-15deg);
+  padding: 5px 10px;
+  font-size: 18px;
+  color: #fff;
+  font-weight: bold;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.badge-disponible {
+  background-color: #28a745; /* Vert */
+}
+
+.badge-indisponible {
+  background-color: #dc3545; /* Rouge */
+}

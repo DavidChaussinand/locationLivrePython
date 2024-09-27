@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block title %}Louer {{ livre.titre }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h3>Vous allez louer le livre : {{ livre.titre }}</h3>
+    <p>Merci de suivre les instructions pour finaliser la location.</p>
+</div>
+{% endblock %}

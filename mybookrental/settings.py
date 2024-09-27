@@ -18,6 +18,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # settings.py
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / 'main/static']
 
 
 # Quick-start development settings - unsuitable for production

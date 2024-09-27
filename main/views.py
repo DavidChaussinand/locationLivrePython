@@ -208,3 +208,10 @@ def topic_detail(request, topic_id):
 
     form = MessageForm()
     return render(request, 'main/topic_detail.html', {'topic': topic, 'messages': messages, 'form': form})
+
+
+
+
+def location_livre(request, livre_id):
+    livre = get_object_or_404(Livre, id=livre_id)
+    return render(request, 'main/location_livre.html', {'livre': livre})

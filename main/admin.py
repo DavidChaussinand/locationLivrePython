@@ -10,6 +10,8 @@ from .models import Message
 class LivreAdmin(admin.ModelAdmin):
     form = LivreForm
     list_display = ['titre', 'auteur', 'categorie', 'disponible']
+    search_fields = ['titre', 'auteur', 'categorie']  # Champs sur lesquels effectuer la recherche
+    list_filter = ['categorie']  # Filtrer par catégorie
 
 
 
@@ -26,3 +28,5 @@ class TopicAdmin(admin.ModelAdmin):
 
 admin.site.register(Topic, TopicAdmin)
 admin.site.register(Message)
+
+

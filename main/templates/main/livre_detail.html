@@ -20,6 +20,12 @@
             <p><strong>Description :</strong> {{ livre.description }}</p>
             <br><br>
             <p><strong>Prix :</strong> {{ livre.prix }} €</p>
+            {% if livre.disponible %}
+                <a href="{% url 'location_livre' livre.id %}" class="btn btn-success text-white">Louer moi</a>
+            {% else %}
+                <p class="text-danger">Ce livre n'est pas disponible à la location pour le moment.</p>
+            {% endif %}
+
         </div>
     </div>
     

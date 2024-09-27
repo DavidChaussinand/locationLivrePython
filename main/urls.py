@@ -21,5 +21,8 @@ urlpatterns = [
     path('livres/<int:livre_id>/', views.livre_detail, name='livre_detail'),  # URL pour le détail d'un livre
     path('forum/', views.forum_view, name='forum'),
     path('forum/topic/<int:topic_id>/', views.topic_detail, name='topic_detail'),
+    
+    path('livres/location/<int:livre_id>/', views.location_livre, name='location_livre'),
+
 
 ]

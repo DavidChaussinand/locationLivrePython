@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="text-center mb-4">Tous les livres</h2>
+    <h2 class="text-center mb-4">Tous les livres à la location</h2>
 
     <form method="GET" action="{% url 'livres' %}" class="mb-4">
         <div class="input-group mb-3">
@@ -32,19 +32,27 @@
 
     <div class="row">
         {% for livre in livres %}
-        <div class="col-12 col-md-6 col-lg-4 mb-4">
+        <div class="col-12 col-md-6 col-lg-4 mb-4 position-relative">
             <a href="{% url 'livre_detail' livre.id %}" class="text-decoration-none">
-                <div class="card shadow-lg" style="width: 20rem; height: 525px">
+                <div class="card shadow-lg" style="width: 20rem; height: 525px;">
                     <img src="{{ MEDIA_URL }}{{ livre.couverture }}" class="card-img-top" alt="{{ livre.titre }}" style="height: 400px; object-fit: cover;">
                     <div class="card-body">
                         <h5 class="card-title text-center">{{ livre.titre }}</h5>
                         <p class="card-text text-center">{{ livre.resume|truncatewords:15 }}</p>
                     </div>
+                    <!-- Badge de disponibilité avec positionnement absolu et rotation -->
+                    {% if livre.disponible %}
+                    <span class="badge-disponible">Disponible</span>
+                    {% else %}
+                    <span class="badge-indisponible">Indisponible</span>
+                    {% endif %}
                 </div>
             </a>
         </div>
         {% endfor %}
     </div>
+    
+    
 </div>
 {% endblock %}
 
