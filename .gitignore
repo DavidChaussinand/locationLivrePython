@@ -16,3 +16,7 @@ venv/
 # Ignore les fichiers de cache
 __pycache__/
 *.pyc
+
+
+# Ignore le fichier de sauvegarde de la base de données
+backup.sql
