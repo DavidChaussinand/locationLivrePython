@@ -2,6 +2,7 @@
 from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
+from .views import  inscrire_evenement
 
 urlpatterns = [
     path('', views.home, name='home'),  # Page d'accueil
@@ -27,11 +28,12 @@ urlpatterns = [
     path('annuler_location/<int:location_id>/', views.annuler_location, name='annuler_location'),
     path('reservation/<int:livre_id>/', views.reserver_livre, name='reservation_livre'),
     path('prolonger_location/<int:location_id>/', views.prolonger_location, name='prolonger_location'),
-
-
+    path('evenement/<int:evenement_id>/inscription/', inscrire_evenement, name='inscrire_evenement'),
+    path('evenement/<int:evenement_id>/generate_pdf/', views.generate_pdf, name='generate_pdf'),
+    path('evenement/<int:evenement_id>/send_email/', views.send_email, name='send_email'),
+]
 
    
 
 
 
-]

@@ -3,7 +3,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate,  get_user_model
-from .models import Commentaire , Livre , Message , Location
+from .models import Commentaire , Livre , Message , Location , Inscription
 
 class SignUpForm(UserCreationForm):
     first_name = forms.CharField(max_length=30, required=True, help_text='Veuillez entrer votre prénom.')
@@ -174,3 +174,17 @@ class ProlongationLocationForm(forms.ModelForm):
         widgets = {
             'date_fin': forms.DateInput(attrs={'type': 'date'}),
         }
+
+
+class InscriptionForm(forms.ModelForm):
+    class Meta:
+        model = Inscription
+        fields = ['nom', 'prenom', 'email', 'telephone']
+
+    def __init__(self, *args, **kwargs):
+        utilisateur = kwargs.pop('utilisateur', None)
+        super().__init__(*args, **kwargs)
+        if utilisateur:
+            self.fields['nom'].initial = utilisateur.first_name
+            self.fields['prenom'].initial = utilisateur.last_name
+            self.fields['email'].initial = utilisateur.email

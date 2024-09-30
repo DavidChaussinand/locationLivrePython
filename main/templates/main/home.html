@@ -11,6 +11,114 @@
         <a class="btn btn-primary btn-lg" href="{% url 'livres' %}" role="button">Découvrir les livres</a>
     </div>
 
+    <h2 class="mt-5">Événements à venir</h2>
+    {% if evenements %}
+        <div class="list-group">
+            {% for evenement in evenements %}
+                <div class="list-group-item">
+                    <h4 class="mb-1">{{ evenement.titre }}</h4>
+                    <p>{{ evenement.contenu|linebreaks }}</p>
+                    <small class="text-muted">Date : {{ evenement.date|date:"d/m/Y H:i" }}</small>
+    
+                    {% if user.is_authenticated %}
+                        <!-- Bouton pour afficher le formulaire d'inscription -->
+                        <button type="button" class="btn btn-primary mt-3" data-toggle="modal" data-target="#inscriptionModal{{ evenement.id }}">
+                            S'inscrire à l'événement
+                        </button>
+    
+                        <!-- Modal pour le formulaire d'inscription -->
+                        <div class="modal fade" id="inscriptionModal{{ evenement.id }}" tabindex="-1" role="dialog" aria-labelledby="inscriptionModalLabel{{ evenement.id }}" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="inscriptionModalLabel{{ evenement.id }}">Inscription à {{ evenement.titre }}</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form method="POST" action="{% url 'inscrire_evenement' evenement.id %}">
+                                            {% csrf_token %}
+                                            <div class="form-group">
+                                                <label for="nom">Nom</label>
+                                                <input type="text" class="form-control" id="nom" name="nom" value="{{ user.first_name }}" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="prenom">Prénom</label>
+                                                <input type="text" class="form-control" id="prenom" name="prenom" value="{{ user.last_name }}" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="email">Email</label>
+                                                <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="telephone">Numéro de téléphone</label>
+                                                <input type="tel" class="form-control" id="telephone" name="telephone" required>
+                                            </div>
+                                            <button type="submit" class="btn btn-success">S'inscrire</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+    
+                    <!-- Liste des inscrits -->
+                    <h5 class="mt-4">Inscrits :</h5>
+                    {% if evenement.inscription_set.exists %}
+                        <table class="table table-striped mt-3">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Nom</th>
+                                    <th scope="col">Prénom</th>
+                                    <th scope="col">Email</th>
+                                    <th scope="col">Téléphone</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for inscrit in evenement.inscription_set.all %}
+                                    <tr>
+                                        <td>{{ inscrit.nom }}</td>
+                                        <td>{{ inscrit.prenom }}</td>
+                                        <td>{{ inscrit.email }}</td>
+                                        <td>{{ inscrit.telephone }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    
+                          {# Affiche les boutons uniquement si l'utilisateur est administrateur #}
+                            {% if user.is_staff %}
+                                <form method="POST" action="{% url 'generate_pdf' evenement.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-primary">Enregistrer en PDF</button>
+                                </form>
+                                <form method="POST" action="{% url 'send_email' evenement.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-secondary">Recevoir par email</button>
+                                </form>
+                            {% endif %}
+
+
+                    {% else %}
+                        <p>Aucun inscrit pour cet événement.</p>
+                    {% endif %}
+
+
+    
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Aucun événement n'est disponible pour le moment.</p>
+    {% endif %}
+    
+    
+    
+
+
+            
+            <br><br><br><br>
     <h3 class="text-center mb-5">Les best-seller du moment</h3>
 
 

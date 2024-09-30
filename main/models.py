@@ -104,3 +104,24 @@ class Location(models.Model):
         cls.objects.filter(date_debut__lte=now, date_fin__gt=now, statut='Réservé').update(statut='En cours')
         # Mettre à jour les locations terminées
         cls.objects.filter(date_fin__lt=now, statut__in=['Réservé', 'En cours']).update(statut='Terminé')
+
+
+class Evenement(models.Model):
+    titre = models.CharField(max_length=200)
+    contenu = models.TextField()
+    date = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return self.titre
+
+
+class Inscription(models.Model):
+    evenement = models.ForeignKey(Evenement, on_delete=models.CASCADE)
+    utilisateur = models.ForeignKey(User, on_delete=models.CASCADE)
+    nom = models.CharField(max_length=255)
+    prenom = models.CharField(max_length=255)
+    email = models.EmailField()
+    telephone = models.CharField(max_length=15)
+
+    def __str__(self):
+        return f"{self.utilisateur.username} - {self.evenement.titre}"

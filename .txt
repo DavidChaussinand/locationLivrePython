@@ -35,5 +35,5 @@ git push origin v1.45
 
 git status
 git add . 
-git commit - m " ici le texte"
+git commit -m " ici le texte"
 git push origin main

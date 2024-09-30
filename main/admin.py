@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib import admin
 from .models import Livre , Topic
 from .forms import LivreForm
-from .models import Message , Location
+from .models import Message , Location ,Evenement , Inscription
 
 @admin.register(Livre)
 class LivreAdmin(admin.ModelAdmin):
@@ -39,3 +39,17 @@ admin.site.register(Topic, TopicAdmin)
 admin.site.register(Message)
 
 
+
+@admin.register(Evenement)
+class EvenementAdmin(admin.ModelAdmin):
+    list_display = ['titre', 'date']
+    search_fields = ['titre', 'contenu']
+    list_filter = ['date']
+
+
+
+@admin.register(Inscription)
+class InscriptionAdmin(admin.ModelAdmin):
+    list_display = ['nom', 'prenom', 'email', 'telephone', 'evenement']
+    search_fields = ['nom', 'prenom', 'email']
+    list_filter = ['evenement']

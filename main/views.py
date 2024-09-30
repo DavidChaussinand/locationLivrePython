@@ -7,20 +7,31 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .forms import SignUpForm , EmailLoginForm , ContactForm , CommentaireForm ,MessageForm, LocationForm , ProlongationLocationForm
+from .forms import SignUpForm , EmailLoginForm , ContactForm , CommentaireForm ,MessageForm, LocationForm , ProlongationLocationForm , InscriptionForm
 from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
 from django.core.mail import send_mail
-from .models import Livre , Commentaire ,Topic, Message , Location
+from .models import Livre , Commentaire ,Topic, Message , Location, Evenement
 from django.db.models import Q
 from datetime import datetime
 from django.utils import timezone
+from django.http import HttpResponse
+from django.template.loader import get_template
+from django.core.mail import send_mail
+from io import BytesIO
+from reportlab.pdfgen import canvas
+from django.contrib.auth.decorators import user_passes_test
+
 
 
 
 
 def home(request):
     best_sellers = Livre.objects.filter(best_seller=True)
-    return render(request, 'main/home.html', {'best_sellers': best_sellers})
+    evenements = Evenement.objects.all().order_by('-date')
+    return render(request, 'main/home.html', {
+        'best_sellers': best_sellers,
+        'evenements': evenements,
+    })
 
 # Vue pour la page de connexion
 
@@ -312,3 +323,74 @@ def prolonger_location(request, location_id):
 #     return render(request, 'ton_template.html', context)
 
 
+
+
+@login_required
+def inscrire_evenement(request, evenement_id):
+    evenement = get_object_or_404(Evenement, id=evenement_id)
+
+    if request.method == 'POST':
+        form = InscriptionForm(request.POST, utilisateur=request.user)
+        if form.is_valid():
+            inscription = form.save(commit=False)
+            inscription.utilisateur = request.user
+            inscription.evenement = evenement
+            inscription.save()
+            # Rediriger vers la page d'accueil après inscription
+            return redirect('home')
+    else:
+        form = InscriptionForm(utilisateur=request.user)
+
+    return redirect('home')  # Garde l'utilisateur sur la page d'accueil après l'inscription
+
+
+
+# Vérifier si l'utilisateur est administrateur
+def is_admin(user):
+    return user.is_staff
+
+# Générer un PDF pour les inscrits
+@user_passes_test(is_admin)
+def generate_pdf(request, evenement_id):
+    evenement = Evenement.objects.get(id=evenement_id)
+    inscrits = evenement.inscription_set.all()
+
+    # Utilisation de reportlab pour générer un PDF
+    buffer = BytesIO()
+    p = canvas.Canvas(buffer)
+
+    # Créer le contenu du PDF
+    p.drawString(100, 800, f"Inscrits pour l'événement : {evenement.titre}")
+    y = 760
+    for inscrit in inscrits:
+        p.drawString(100, y, f"{inscrit.nom} {inscrit.prenom} - {inscrit.email} - {inscrit.telephone}")
+        y -= 20
+
+    p.showPage()
+    p.save()
+
+    # Envoyer le fichier PDF au navigateur
+    buffer.seek(0)
+    return HttpResponse(buffer, content_type='application/pdf')
+
+# Envoyer la liste par email
+@user_passes_test(is_admin)
+def send_email(request, evenement_id):
+    evenement = Evenement.objects.get(id=evenement_id)
+    inscrits = evenement.inscription_set.all()
+
+    # Créer le contenu de l'email
+    message = f"Liste des inscrits pour l'événement {evenement.titre}:\n\n"
+    for inscrit in inscrits:
+        message += f"{inscrit.nom} {inscrit.prenom} - {inscrit.email} - {inscrit.telephone}\n"
+
+    # Envoi de l'email
+    send_mail(
+        f"Inscrits pour {evenement.titre}",
+        message,
+        'admin@votre-site.com',
+        [request.user.email],  # Envoyer l'email à l'administrateur connecté
+        fail_silently=False,
+    )
+
+    return HttpResponse("Email envoyé avec succès.")
