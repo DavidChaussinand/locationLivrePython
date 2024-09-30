@@ -12,6 +12,9 @@ from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, 
 from django.core.mail import send_mail
 from .models import Livre , Commentaire ,Topic, Message , Location
 from django.db.models import Q
+from datetime import datetime
+from django.utils import timezone
+
 
 
 
@@ -247,10 +250,20 @@ def reserver_livre(request, livre_id):
 
 
 
+import logging
+logger = logging.getLogger(__name__)
+
 @login_required
 def profile_view(request):
-    locations = Location.objects.filter(user=request.user).order_by('-date_debut')
-    return render(request, 'main/profile.html', {'locations': locations})
+    locations = Location.objects.filter(user=request.user)
+    today = timezone.now()
+    logger.info(f"Locations: {locations}")
+    context = {
+        'locations': locations,
+        'today': today
+    }
+    return render(request, 'main/profile.html', context)
+
 
 
 @login_required
@@ -279,3 +292,22 @@ def prolonger_location(request, location_id):
         form = ProlongationLocationForm(instance=location)
 
     return render(request, 'main/prolonger_location.html', {'form': form, 'location': location})
+
+
+
+def mes_locations(request):
+    # Récupère les locations de l'utilisateur connecté
+    locations = Location.objects.filter(user=request.user)
+
+    # Filtrer les locations en cours
+    locations_en_cours = locations.filter(statut='En cours')
+
+    # Filtrer les locations terminées
+    locations_terminees = locations.filter(statut='Terminé')
+
+    context = {
+        'locations_en_cours': locations_en_cours,
+        'locations_terminees': locations_terminees,
+    }
+
+    return render(request, 'ton_template.html', context)

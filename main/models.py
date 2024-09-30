@@ -4,6 +4,9 @@ from django.db import models
 # main/models.py
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
+from datetime import datetime
+
 
 class Livre(models.Model):
     CATEGORIES_CHOICES = [
@@ -68,12 +71,36 @@ class Message(models.Model):
         return f"Message de {self.author.username} sur {self.topic.title}"
     
 
+
+
+
 class Location(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     livre = models.ForeignKey(Livre, on_delete=models.CASCADE)
-    date_debut = models.DateField()
-    date_fin = models.DateField()
+    date_debut = models.DateTimeField(default=timezone.now)
+    date_fin = models.DateTimeField(default=timezone.now)
     statut = models.CharField(max_length=20, choices=[('Réservé', 'Réservé'), ('En cours', 'En cours'), ('Terminé', 'Terminé')], default='Réservé')
-    
+
     def __str__(self):
         return f"{self.livre.titre} loué par {self.user.username}"
+    
+    def save(self, *args, **kwargs):
+        now = timezone.now()
+        # Vérifie si la date de fin est dépassée et met à jour le statut
+        if self.date_debut <= now < self.date_fin:
+            self.statut = 'En cours'
+        elif now >= self.date_fin:
+            self.statut = 'Terminé'
+            if not self.livre.disponible:
+                # Rendre le livre disponible à la fin de la location
+                self.livre.disponible = True
+                self.livre.save()
+        super(Location, self).save(*args, **kwargs)
+
+    @classmethod
+    def update_status(cls):
+        now = timezone.now()
+        # Mettre à jour les locations en cours
+        cls.objects.filter(date_debut__lte=now, date_fin__gt=now, statut='Réservé').update(statut='En cours')
+        # Mettre à jour les locations terminées
+        cls.objects.filter(date_fin__lt=now, statut__in=['Réservé', 'En cours']).update(statut='Terminé')

@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib import admin
 from .models import Livre , Topic
 from .forms import LivreForm
-from .models import Message
+from .models import Message , Location
 
 @admin.register(Livre)
 class LivreAdmin(admin.ModelAdmin):
@@ -25,6 +25,14 @@ class TopicAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
         return qs.filter(author=request.user)
+    
+@admin.register(Location)
+class LocationAdmin(admin.ModelAdmin):
+    list_display = ['livre', 'user', 'date_debut', 'date_fin', 'statut']
+    list_filter = ['statut', 'date_debut', 'date_fin']
+    search_fields = ['livre__titre', 'user__username']
+    autocomplete_fields = ['livre', 'user']  # Pour faciliter la sélection des livres et utilisateurs
+
 
 admin.site.register(Topic, TopicAdmin)
 admin.site.register(Message)

@@ -8,26 +8,70 @@
     <p>Ceci est votre page de profil. Vous êtes connecté avec l'adresse e-mail : {{ user.email }}</p>
 </div>
 
+<div class="container mt-5">
+    <h2>Vos réservations en cours</h2>
+    {% if locations %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Livre</th>
+                <th>Date de début</th>
+                <th>Date de fin</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for location in locations %}
+                {% if location.date_fin >= today %}
+                <tr>
+                    <td>{{ location.livre.titre }}</td>
+                    <td>{{ location.date_debut|date:"d/m/Y H:i" }}</td>
+                    <td>{{ location.date_fin|date:"d/m/Y H:i" }}</td>
+
+                    <td>{{ location.statut }}</td>
+                    <td>
+                        <a href="{% url 'annuler_location' location.id %}" class="btn btn-danger btn-sm">Annuler</a>
+                        <a href="{% url 'prolonger_location' location.id %}" class="btn btn-warning btn-sm">Prolonger</a>
+                    </td>
+                </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Vous n'avez aucune réservation en cours.</p>
+    {% endif %}
+</div>
 
 <div class="container mt-5">
-    <h2>Vos réservations</h2>
+    <h2>Vos réservations terminées</h2>
     {% if locations %}
-    <ul>
-        {% for location in locations %}
-            <li>
-                <strong>{{ location.livre.titre }}</strong> <br>
-                Du {{ location.date_debut }} au {{ location.date_fin }} <br>
-                Statut : {{ location.statut }} <br>
-                <a href="{% url 'annuler_location' location.id %}" class="btn btn-danger btn-sm">Annuler</a>
-                <a href="{% url 'prolonger_location' location.id %}" class="btn btn-warning btn-sm">Prolonger</a>
-            </li>
-        {% endfor %}
-    
-    </ul>
-{% else %}
-    <p>Vous n'avez aucune réservation en cours.</p>
-{% endif %}
-
-
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Livre</th>
+                <th>Date de début</th>
+                <th>Date de fin</th>
+                
+            </tr>
+        </thead>
+        <tbody>
+            {% for location in locations %}
+                {% if location.date_fin < today %}
+                <tr>
+                    <td>{{ location.livre.titre }}</td>
+                    <td>{{ location.date_debut|date:"d/m/Y H:i" }}</td>
+                    <td>{{ location.date_fin|date:"d/m/Y H:i" }}</td>
+                    
+                    
+                </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Vous n'avez aucune réservation terminée.</p>
+    {% endif %}
 </div>
 {% endblock %}

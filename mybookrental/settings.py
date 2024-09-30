@@ -194,3 +194,23 @@ DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')
 # Dossier pour les fichiers uploadés (images)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+
+# Configuration du courtier de messages (ici, nous utilisons Redis)
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+
+# Utiliser la timezone de Django pour Celery
+CELERY_TIMEZONE = TIME_ZONE  # Assurez-vous que TIME_ZONE est bien défini
+
+# Configuration de la tâche périodique
+CELERY_BEAT_SCHEDULE = {
+    'update-livre-disponibilite': {
+        'task': 'main.tasks.update_livre_disponibilite',
+        'schedule': 60.0,  # Toutes les 1 minutes (60 secondes)
+    },
+    'update-locations-status-every-minute': {
+        'task': 'main.tasks.update_locations_status',
+        'schedule': 60.0,  # Toutes les minutes
+    },
+}
