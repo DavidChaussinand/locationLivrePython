@@ -9,8 +9,9 @@ from .models import Message , Location
 @admin.register(Livre)
 class LivreAdmin(admin.ModelAdmin):
     form = LivreForm
-    list_display = ['titre', 'auteur', 'categorie', 'disponible']
-    search_fields = ['titre', 'auteur', 'categorie']  # Champs sur lesquels effectuer la recherche
+    list_display = ['titre', 'auteur', 'categorie', 'disponible', 'best_seller']  # Note que c'est 'best_seller' ici
+    list_editable = ['best_seller']  # Rendre best_seller éditable depuis la liste
+    search_fields = ['titre', 'auteur', 'categorie']  # Pas besoin de best_seller ici pour la recherche
     list_filter = ['categorie']  # Filtrer par catégorie
 
 

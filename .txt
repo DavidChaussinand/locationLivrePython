@@ -25,3 +25,15 @@ pour la gestion en directe des status et disponibilité ouvrir un terminal pour 
    redis-server
    celery -A mybookrental worker -l info --pool=solo
    celery -A mybookrental beat -l info
+
+
+commande pour les tags
+git tag
+git tag -a v1.45 -m "Version 1.45 :mise en place d'un carousel pour afficher les best seller"
+git push origin v1.45
+
+
+git status
+git add . 
+git commit - m " ici le texte"
+git push origin main
