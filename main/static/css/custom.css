@@ -1,3 +1,6 @@
+
+
+
 /* main/static/css/custom.css */
 @media (min-width: 992px) {
     .col-lg-1-5 {
@@ -29,4 +32,12 @@
 
 .badge-indisponible {
   background-color: #dc3545; /* Rouge */
+}
+
+
+
+.container-carousel {
+  width: 60%; /* Fixe la largeur à 60% de l'écran */
+  margin: 0 auto; /* Centre le carousel horizontalement */
+  padding-top: 20px; /* Optionnel : ajoute un peu d'espace en haut */
 }

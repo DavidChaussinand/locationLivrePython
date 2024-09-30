@@ -19,9 +19,8 @@ from django.utils import timezone
 
 
 def home(request):
-    return render(request, 'main/home.html')
-
-
+    best_sellers = Livre.objects.filter(best_seller=True)
+    return render(request, 'main/home.html', {'best_sellers': best_sellers})
 
 # Vue pour la page de connexion
 
@@ -295,19 +294,21 @@ def prolonger_location(request, location_id):
 
 
 
-def mes_locations(request):
-    # Récupère les locations de l'utilisateur connecté
-    locations = Location.objects.filter(user=request.user)
+# def mes_locations(request):
+#     # Récupère les locations de l'utilisateur connecté
+#     locations = Location.objects.filter(user=request.user)
 
-    # Filtrer les locations en cours
-    locations_en_cours = locations.filter(statut='En cours')
+#     # Filtrer les locations en cours
+#     locations_en_cours = locations.filter(statut='En cours')
 
-    # Filtrer les locations terminées
-    locations_terminees = locations.filter(statut='Terminé')
+#     # Filtrer les locations terminées
+#     locations_terminees = locations.filter(statut='Terminé')
 
-    context = {
-        'locations_en_cours': locations_en_cours,
-        'locations_terminees': locations_terminees,
-    }
+#     context = {
+#         'locations_en_cours': locations_en_cours,
+#         'locations_terminees': locations_terminees,
+#     }
 
-    return render(request, 'ton_template.html', context)
+#     return render(request, 'ton_template.html', context)
+
+
