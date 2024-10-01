@@ -12,6 +12,11 @@ python manage.py runserver
 python manage.py makemigrations
 python manage.py migrate
 
+.\env\Scripts\activate  
+deactivate
+
+pytest
+
 
 pour la gestion en directe des status et disponibilité ouvrir un terminal pour chaque: 
    redis-server

@@ -134,6 +134,9 @@ class Location(models.Model):
             task = AsyncResult(self.reminder_task_id)
             task.revoke()
         super(Location, self).delete(*args, **kwargs)
+
+
+        
 class Evenement(models.Model):
     titre = models.CharField(max_length=200)
     contenu = models.TextField()

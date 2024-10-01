@@ -120,6 +120,12 @@ class CommentaireForm(forms.ModelForm):
             'note': 'Note (0 à 5)',
         }
 
+    def clean_note(self):
+        note = self.cleaned_data.get('note')
+        if note < 0 or note > 5:
+            raise forms.ValidationError("La note doit être comprise entre 0 et 5.")
+        return note
+
 
 class LivreForm(forms.ModelForm):
     image_upload = forms.ImageField(required=False, label="Télécharger une image")
@@ -165,6 +171,7 @@ class LocationForm(forms.ModelForm):
             'date_debut': forms.DateInput(attrs={'type': 'date'}),
             'date_fin': forms.DateInput(attrs={'type': 'date'}),
         }
+    
 
 
 class ProlongationLocationForm(forms.ModelForm):
