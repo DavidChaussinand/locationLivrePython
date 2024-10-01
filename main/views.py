@@ -20,7 +20,11 @@ from django.core.mail import send_mail
 from io import BytesIO
 from reportlab.pdfgen import canvas
 from django.contrib.auth.decorators import user_passes_test
+from datetime import timedelta
+import logging
+from celery.result import AsyncResult
 
+from .tasks import send_reminder_email
 
 
 
@@ -229,9 +233,74 @@ def topic_detail(request, topic_id):
 
 
 
+@login_required
 def location_livre(request, livre_id):
     livre = get_object_or_404(Livre, id=livre_id)
+
+    if request.method == 'POST':
+        if not livre.disponible:
+            messages.error(request, "Le livre n'est pas disponible pour le moment.")
+            return redirect('livre_detail', livre_id=livre.id)
+
+        location = Location.objects.create(
+            user=request.user,
+            livre=livre,
+            date_debut=timezone.now(),
+            date_fin=timezone.now() + timedelta(days=7),  # Location de 7 jours
+            statut='Réservé',
+        )
+
+        # Rendre le livre indisponible
+        livre.disponible = False
+        livre.save()
+
+        # Planifier la tâche de rappel
+        reminder_time = location.date_fin - timedelta(minutes=10)
+        task = send_reminder_email.apply_async((location.id,), eta=reminder_time)
+
+        # Journaliser l'ID de la tâche
+        logger.info(f"Tâche de rappel programmée avec l'ID {task.id}")
+
+        # Sauvegarder l'ID de la tâche
+        location.reminder_task_id = task.id
+        location.save()
+
+        messages.success(request, "Le livre a été réservé avec succès.")
+        return redirect('profile')
+
     return render(request, 'main/location_livre.html', {'livre': livre})
+
+
+logger = logging.getLogger(__name__)
+
+@login_required
+def location_livre(request, livre_id):
+    livre = get_object_or_404(Livre, id=livre_id)
+
+    if request.method == 'POST':
+        if not livre.disponible:
+            messages.error(request, "Le livre n'est pas disponible pour le moment.")
+            return redirect('livre_detail', livre_id=livre.id)
+
+        # Créer la location
+        location = Location(
+            user=request.user,
+            livre=livre,
+            date_debut=timezone.now(),
+            date_fin=timezone.now() + timedelta(days=7),  # Location de 7 jours
+            statut='Réservé',
+        )
+        location.save()
+
+        # Rendre le livre indisponible
+        livre.disponible = False
+        livre.save()
+
+        messages.success(request, "Le livre a été réservé avec succès.")
+        return redirect('profile')
+
+    return render(request, 'main/location_livre.html', {'livre': livre})
+
 
 
 @login_required
@@ -278,7 +347,7 @@ def profile_view(request):
 
 @login_required
 def annuler_location(request, location_id):
-    location = get_object_or_404(Location, id=location_id, user=request.user, statut='Réservé')
+    location = get_object_or_404(Location, id=location_id, user=request.user, statut='en cours')
     location.delete()
     location.livre.disponible = True
     location.livre.save()
@@ -286,41 +355,47 @@ def annuler_location(request, location_id):
     return redirect('profile')
 
 # views.py
+# @login_required
+# def prolonger_location(request, location_id):
+#     location = get_object_or_404(Location, id=location_id, user=request.user)
+
+#     if request.method == 'POST':
+#         form = ProlongationLocationForm(request.POST, instance=location)
+#         if form.is_valid():
+#             # Seule la date de fin est modifiée
+#             location.date_fin = form.cleaned_data['date_fin']
+#             location.save()
+#             messages.success(request, "Location prolongée avec succès.")
+#             return redirect('profile')
+#     else:
+#         form = ProlongationLocationForm(instance=location)
+
+#     return render(request, 'main/prolonger_location.html', {'form': form, 'location': location})
+
+@login_required
 @login_required
 def prolonger_location(request, location_id):
     location = get_object_or_404(Location, id=location_id, user=request.user)
+    
+    # Prolonger la date de fin
+    location.date_fin += timedelta(days=7)
 
-    if request.method == 'POST':
-        form = ProlongationLocationForm(request.POST, instance=location)
-        if form.is_valid():
-            # Seule la date de fin est modifiée
-            location.date_fin = form.cleaned_data['date_fin']
-            location.save()
-            messages.success(request, "Location prolongée avec succès.")
-            return redirect('profile')
-    else:
-        form = ProlongationLocationForm(instance=location)
+    # Annuler l'ancienne tâche de rappel si elle existe
+    if location.reminder_task_id:
+        task = AsyncResult(location.reminder_task_id)
+        task.revoke()
 
-    return render(request, 'main/prolonger_location.html', {'form': form, 'location': location})
+    # Planifier une nouvelle tâche de rappel
+    reminder_time = location.date_fin - timedelta(minutes=10)
+    task = send_reminder_email.apply_async((location.id,), eta=reminder_time)
 
+    # Sauvegarder le nouvel ID de tâche
+    location.reminder_task_id = task.id
+    location.save()
 
+    messages.success(request, "Votre location a été prolongée avec succès.")
+    return redirect('profile')
 
-# def mes_locations(request):
-#     # Récupère les locations de l'utilisateur connecté
-#     locations = Location.objects.filter(user=request.user)
-
-#     # Filtrer les locations en cours
-#     locations_en_cours = locations.filter(statut='En cours')
-
-#     # Filtrer les locations terminées
-#     locations_terminees = locations.filter(statut='Terminé')
-
-#     context = {
-#         'locations_en_cours': locations_en_cours,
-#         'locations_terminees': locations_terminees,
-#     }
-
-#     return render(request, 'ton_template.html', context)
 
 
 

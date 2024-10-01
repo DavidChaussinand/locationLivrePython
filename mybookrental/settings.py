@@ -214,3 +214,28 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': 60.0,  # Toutes les minutes
     },
 }
+
+
+# Configuration de la journalisation
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'main': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+    },
+}

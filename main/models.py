@@ -5,7 +5,9 @@ from django.db import models
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
-from datetime import datetime
+
+from datetime import timedelta
+from celery.result import AsyncResult
 
 
 class Livre(models.Model):
@@ -71,41 +73,67 @@ class Message(models.Model):
         return f"Message de {self.author.username} sur {self.topic.title}"
     
 
-
-
-
 class Location(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     livre = models.ForeignKey(Livre, on_delete=models.CASCADE)
     date_debut = models.DateTimeField(default=timezone.now)
     date_fin = models.DateTimeField(default=timezone.now)
-    statut = models.CharField(max_length=20, choices=[('Réservé', 'Réservé'), ('En cours', 'En cours'), ('Terminé', 'Terminé')], default='Réservé')
+    statut = models.CharField(
+        max_length=20,
+        choices=[('Réservé', 'Réservé'), ('En cours', 'En cours'), ('Terminé', 'Terminé')],
+        default='Réservé'
+    )
+    reminder_task_id = models.CharField(max_length=255, null=True, blank=True)  # Stocke l'ID de la tâche
 
-    def __str__(self):
-        return f"{self.livre.titre} loué par {self.user.username}"
-    
     def save(self, *args, **kwargs):
-        now = timezone.now()
-        # Vérifie si la date de fin est dépassée et met à jour le statut
-        if self.date_debut <= now < self.date_fin:
-            self.statut = 'En cours'
-        elif now >= self.date_fin:
-            self.statut = 'Terminé'
-            if not self.livre.disponible:
-                # Rendre le livre disponible à la fin de la location
-                self.livre.disponible = True
-                self.livre.save()
+        # Vérifier si la location existe déjà dans la base de données (édition)
+        if self.pk:
+            # Récupérer l'ancienne instance avant modification
+            old_location = Location.objects.get(pk=self.pk)
+
+            # Si la date de fin a changé, replanifier la tâche de rappel
+            if old_location.date_fin != self.date_fin:
+                # Annuler la tâche de rappel précédente si elle existe
+                if self.reminder_task_id:
+                    task = AsyncResult(self.reminder_task_id)
+                    task.revoke()
+
+                # Importer la tâche ici pour éviter l'import circulaire
+                from .tasks import send_reminder_email
+
+                # Planifier une nouvelle tâche de rappel 10 minutes avant la nouvelle date de fin
+                reminder_time = self.date_fin - timedelta(minutes=10)
+
+                # Utiliser datetime.timezone pour UTC
+                from datetime import timezone as dt_timezone
+                reminder_time_utc = reminder_time.astimezone(dt_timezone.utc)
+
+                # Planifier la nouvelle tâche
+                task = send_reminder_email.apply_async((self.id,), eta=reminder_time_utc)
+                self.reminder_task_id = task.id
+
+        else:  # Cas de la création d'une nouvelle location
+            # Importer la tâche ici pour éviter l'import circulaire
+            from .tasks import send_reminder_email
+
+            # Planifier une tâche de rappel 10 minutes avant la date de fin
+            reminder_time = self.date_fin - timedelta(minutes=10)
+
+            # Utiliser datetime.timezone pour UTC
+            from datetime import timezone as dt_timezone
+            reminder_time_utc = reminder_time.astimezone(dt_timezone.utc)
+
+            # Planifier la tâche
+            task = send_reminder_email.apply_async((self.id,), eta=reminder_time_utc)
+            self.reminder_task_id = task.id
+
         super(Location, self).save(*args, **kwargs)
 
-    @classmethod
-    def update_status(cls):
-        now = timezone.now()
-        # Mettre à jour les locations en cours
-        cls.objects.filter(date_debut__lte=now, date_fin__gt=now, statut='Réservé').update(statut='En cours')
-        # Mettre à jour les locations terminées
-        cls.objects.filter(date_fin__lt=now, statut__in=['Réservé', 'En cours']).update(statut='Terminé')
-
-
+    def delete(self, *args, **kwargs):
+        if self.reminder_task_id:
+            task = AsyncResult(self.reminder_task_id)
+            task.revoke()
+        super(Location, self).delete(*args, **kwargs)
 class Evenement(models.Model):
     titre = models.CharField(max_length=200)
     contenu = models.TextField()

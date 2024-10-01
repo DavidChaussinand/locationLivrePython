@@ -1,25 +1,17 @@
 Étapes de réflexion pour un système de location de livres
-1. Pour l'Administrateur :
-
-Gestion des Locations : Suivre les locations en cours, les retours, les historiques, et mettre à jour la disponibilité des livres.
-Notification : Envoyer des rappels pour les retours de livres, gérer les pénalités en cas de retard.
-:
 
 
 
 
 
 
-pour remettre sur mon fichier de mon pc: PAGE modifier
-1: profile.html et profile_view et models => Location
-
-
-
-ATTENTION:
-1 -> Controler si le livre marvel est répassé en disponible.
-
+--------------------------------------------------------- COMMANDE FREQUENTE : --------------------
 
 python manage.py runserver
+
+python manage.py makemigrations
+python manage.py migrate
+
 
 pour la gestion en directe des status et disponibilité ouvrir un terminal pour chaque: 
    redis-server
@@ -37,3 +29,4 @@ git status
 git add . 
 git commit -m " ici le texte"
 git push origin main
+
