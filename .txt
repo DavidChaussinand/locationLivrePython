@@ -16,6 +16,7 @@ python manage.py migrate
 deactivate
 
 pytest
+pytest main/tests/test_views.py    pour cibler un fichier de test.
 
 
 pour la gestion en directe des status et disponibilité ouvrir un terminal pour chaque: 

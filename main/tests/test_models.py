@@ -224,7 +224,7 @@ def test_create_location():
     # Vérification des attributs de la location
     assert location.user == user
     assert location.livre == livre
-    assert location.statut == 'Réservé'
+    assert location.statut == 'En cours'
 
 @pytest.mark.django_db
 @patch('main.tasks.send_reminder_email.apply_async')
@@ -255,7 +255,7 @@ def test_save_location_schedules_task(mock_apply_async):
     # Vérification des attributs de la location
     assert location.user == user
     assert location.livre == livre
-    assert location.statut == 'Réservé'
+    assert location.statut == 'En cours'
 
 
 @pytest.mark.django_db
