@@ -80,8 +80,8 @@ class Location(models.Model):
     date_fin = models.DateTimeField(default=timezone.now)
     statut = models.CharField(
         max_length=20,
-        choices=[('Réservé', 'Réservé'), ('En cours', 'En cours'), ('Terminé', 'Terminé')],
-        default='Réservé'
+        choices=[('En cours', 'En cours'), ('Terminé', 'Terminé')],
+        default='En cours'
     )
     reminder_task_id = models.CharField(max_length=255, null=True, blank=True)  # Stocke l'ID de la tâche
 

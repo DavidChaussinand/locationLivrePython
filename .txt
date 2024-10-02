@@ -35,3 +35,5 @@ git add .
 git commit -m " ici le texte"
 git push origin main
 
+netstat -ano | findstr :6379
+taskkill /PID <PID> /F

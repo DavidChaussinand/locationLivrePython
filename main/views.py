@@ -288,7 +288,7 @@ def location_livre(request, livre_id):
             livre=livre,
             date_debut=timezone.now(),
             date_fin=timezone.now() + timedelta(days=7),  # Location de 7 jours
-            statut='Réservé',
+            statut='En cours',
         )
         location.save()
 
@@ -316,14 +316,16 @@ def reserver_livre(request, livre_id):
             location = form.save(commit=False)
             location.user = request.user
             location.livre = livre
+            location.statut = 'En cours'  # Statut changé à 'En cours'
             location.save()
             livre.disponible = False
             livre.save()
-            messages.success(request, "Réservation effectuée avec succès.")
+            messages.success(request, "Réservation effectuée avec succès, la location est en cours.")
             return redirect('profile')
     else:
         form = LocationForm()
     return render(request, 'main/location_livre.html', {'livre': livre, 'form': form})
+
 
 
 

@@ -25,10 +25,9 @@ def update_livre_disponibilite():
 @shared_task
 def update_locations_status():
     now = timezone.now()
-    # Met à jour les locations en cours
-    Location.objects.filter(date_debut__lte=now, date_fin__gt=now, statut='Réservé').update(statut='En cours')
-    # Met à jour les locations terminées
-    Location.objects.filter(date_fin__lt=now, statut__in=['Réservé', 'En cours']).update(statut='Terminé')
+    # Met à jour les locations en cours (on n'a plus besoin de filtrer par 'Réservé')
+    Location.objects.filter(date_fin__lt=now, statut='En cours').update(statut='Terminé')
+
 
 
 logger = logging.getLogger(__name__)
