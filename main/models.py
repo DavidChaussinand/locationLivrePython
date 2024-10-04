@@ -156,3 +156,18 @@ class Inscription(models.Model):
 
     def __str__(self):
         return f"{self.utilisateur.username} - {self.evenement.titre}"
+    
+
+
+class MessageTchat(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages', null=True, blank=True)
+    content = models.TextField()
+    timestamp = models.DateTimeField(default=timezone.now)  # Utilise timezone.now comme valeur par défaut
+
+    def __str__(self):
+        if self.recipient:
+            return f'{self.user.username} to {self.recipient.username}: {self.content}'
+        return f'{self.user.username}: {self.content}'
+    
+

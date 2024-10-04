@@ -42,8 +42,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'main'
+    'main',
+    'channels'
 ]
+
+ASGI_APPLICATION = 'mybookrental.asgi.application'
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -236,6 +240,16 @@ LOGGING = {
         'main': {
             'handlers': ['console'],
             'level': 'INFO',
+        },
+    },
+}
+
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],  # Assure-toi que Redis tourne
         },
     },
 }

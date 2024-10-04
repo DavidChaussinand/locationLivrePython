@@ -41,3 +41,133 @@
   margin: 0 auto; /* Centre le carousel horizontalement */
   padding-top: 20px; /* Optionnel : ajoute un peu d'espace en haut */
 }
+
+
+.height{
+  height: 1500px;
+ 
+}
+
+
+
+/* -------------------------------------------------------- partie tchat --------------------------------------------------*/
+
+
+/* Style pour la fenêtre de chat */
+.chat-container {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  margin-bottom: 60px;
+  width: 1000px;
+  height: 1000px;
+  font-size: 25px;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  overflow-x: hidden;
+}
+
+/* Style pour l'en-tête du chat */
+.chat-header {
+  background-color: #007bff;
+  color: white;
+  text-align: center;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between; /* Ajuste l'espace entre les boutons */
+  align-items: center; /* Aligne les éléments verticalement au centre */
+  padding: 10px; /* Optionnel : ajoute un peu d'espace autour des boutons */
+
+}
+
+
+
+/* Style pour les boutons */
+.chat-btn {
+  border: none;
+  background-color: #007bff;
+  color: white;
+  padding: 10px;
+  width: 50%;
+  flex: 1; /* Optionnel : permet aux boutons de prendre le même espace */
+  margin: 0 10px; /* Optionnel : ajoute de l'espace entre les boutons */
+  border: solid 2px black;
+
+}
+
+/* Style pour le bouton de toggle du chat */
+.chat-toggle-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  font-size: 30px !important;
+  border: none;
+  border-radius: 50%;
+  background-color: #007bff;
+  color: white;
+  z-index: 1001;
+  cursor: pointer;
+}
+
+.chat-toggle-btn:hover {
+  background-color: #0056b3;
+}
+
+
+
+.chat-body {
+  border: 1px solid #ccc;
+  padding: 10px;
+  height: 78%;
+  overflow-y: auto;
+  width: 100%;  /* S'assurer que la largeur du chat ne dépasse pas son conteneur */
+  overflow-x: hidden;  /* Pas de défilement horizontal pour le corps du chat */
+}
+
+.user-item {
+  cursor: pointer;
+}
+
+.user-item:hover {
+  background-color: #f0f0f0;
+}
+
+.message {
+  margin-bottom: 10px;
+}
+
+.chat-footer {
+  margin-top: 10px;
+}
+
+.col-4 {
+  border-right: 1px solid #ccc;
+}
+
+
+
+.message .username {
+  color: darkblue; /* Utilisez darkgreen pour les autres utilisateurs */
+  font-weight: bold;
+}
+
+.message .other-username {
+  color: darkgreen;
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.message .timestamp {
+  color: #140808;
+  font-size: small;
+}
+
+.message .content {
+  color: black;
+  margin-left: 13px;
+  font-size: 20px;
+}

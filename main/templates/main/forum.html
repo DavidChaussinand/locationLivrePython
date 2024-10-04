@@ -3,7 +3,8 @@
 {% block title %}Forum{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-5 height">
+
     {% if user.is_authenticated %}
         <h2>Bienvenue sur le forum, {{ user.username }} !</h2>
         <!-- Affichage des sujets de discussion -->
@@ -31,5 +32,353 @@
             <p>Pour accéder au forum, veuillez <a href="{% url 'login' %}?next={% url 'forum' %}">vous connecter</a> ou <a href="{% url 'signup' %}">créer un compte</a>.</p>
         </div>
     {% endif %}
+
+    <!-- Fenêtre de chat -->
+    <div class="chat-container" id="chatWindow" style="display: none;">
+        <div class="chat-header">
+            <button id="publicChatBtn" class="chat-btn">Public</button>
+            <div class="vertical-line"></div>
+            <button id="privateChatBtn" class="chat-btn">Privé</button>
+        </div>
+        <div class="chat-body" id="publicChatBody">
+            <!-- Messages du chat public apparaîtront ici -->
+        </div>
+  <!-- Fenêtre de chat privé (affichée uniquement quand on clique sur "Privé") -->
+        <div class="chat-body" id="privateChatBody" style="display: none;">
+            <div class="row">
+                <!-- Colonne gauche : Liste des utilisateurs -->
+                <div class="col-4" id="userList">
+                    <h4>Utilisateurs</h4>
+                    <ul class="list-group">
+                        <!-- La liste des utilisateurs sera affichée ici -->
+                        {% for user in users %}
+                        <li class="list-group-item user-item" data-username="{{ user.username }}">
+                            {{ user.username }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- Colonne droite : Boîte de dialogue privée -->
+                <div class="col-8">
+                    <div id="privateChatMessages">
+                        <!-- Les messages du chat privé apparaîtront ici -->
+                    </div>
+                    <div class="chat-footer" id="privateChatFooter">
+                        <textarea id="privateChatMessageInput" placeholder="Écris ton message ici..." class="form-control"></textarea>
+                        <button id="sendPrivateMessageBtn" class="btn btn-primary">Envoyer</button>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-footer" id="publicChatFooter">
+            <textarea id="chatMessageInput" placeholder="Écris ton message ici..." class="form-control"></textarea>
+            <button id="sendMessageBtn" class="btn btn-primary">Envoyer</button>
+        </div>
+        
+    </div>
+    
+    <!-- Bouton pour ouvrir le chat -->
+    <button id="chatToggleBtn" class="chat-toggle-btn">💬</button>
+    
+
 </div>
 {% endblock %}
+
+<!-- Script JavaScript -->
+{% block extra_scripts %}
+<script>
+    // Gestion de l'affichage de la fenêtre de chat
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatWindow = document.getElementById('chatWindow');
+        const chatToggleBtn = document.getElementById('chatToggleBtn');
+        const publicChatBtn = document.getElementById('publicChatBtn');
+        const privateChatBtn = document.getElementById('privateChatBtn');
+        const publicChatBody = document.getElementById('publicChatBody');
+        const privateChatBody = document.getElementById('privateChatBody');
+        const privateChatMessages = document.getElementById('privateChatMessages');
+        let activePrivateChatUser = null;  // L'utilisateur avec qui on discute en privé
+
+        // Toggle de l'affichage du chat
+        chatToggleBtn.addEventListener('click', function() {
+            if (chatWindow.style.display === 'none') {
+                chatWindow.style.display = 'block';
+            } else {
+                chatWindow.style.display = 'none';
+            }
+        });
+
+        // Affichage du chat public par défaut
+        publicChatBtn.addEventListener('click', function() {
+            publicChatBody.style.display = 'block';
+            privateChatBody.style.display = 'none';
+        });
+
+        // Affichage du chat privé
+        privateChatBtn.addEventListener('click', function() {
+            publicChatBody.style.display = 'none';
+            privateChatBody.style.display = 'block';
+        });
+
+        // Sélectionnez l'onglet Public par défaut au chargement
+        publicChatBtn.click();
+
+        // Ajouter un écouteur d'événement pour chaque utilisateur dans la liste (pour chat privé)
+        document.querySelectorAll('.user-item').forEach(function(userItem) {
+            userItem.addEventListener('click', function() {
+                const selectedUsername = this.dataset.username;
+
+                // Définir l'utilisateur actuellement sélectionné
+                activePrivateChatUser = selectedUsername;
+
+                // Afficher la boîte de dialogue privée pour cet utilisateur
+                privateChatMessages.innerHTML = `<h5>Chat avec ${selectedUsername}</h5>`;
+                // Ici, vous pouvez ajouter une logique pour charger les anciens messages de la base de données
+            });
+        });
+    });
+
+    // WebSocket pour le chat public
+    const chatSocket = new WebSocket('ws://' + window.location.host + '/ws/chat/');
+
+    // Lorsqu'un nouveau message est reçu via WebSocket (pour le chat public)
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const chatLog = document.querySelector('#publicChatBody');
+
+        // Créer un nouvel élément de message
+        const newMessage = document.createElement('div');
+        newMessage.classList.add('message');
+
+        // Séparer le nom d'utilisateur et le message
+        const messageParts = data.message.split(":");
+        if (messageParts.length >= 2) {
+        const username = messageParts[0].trim();
+        const messageContent = messageParts.slice(1).join(":").trim();
+        const timestamp = data.timestamp || 'Heure non définie';  // Récupérer le timestamp ou afficher un message par défaut
+
+        // Créer une structure avec trois parties : username, timestamp et message content
+        if (username === "{{ user.username }}") {
+            newMessage.innerHTML = `
+                <span class="username">Moi</span> 
+                <span class="timestamp">${timestamp} :</span>
+                <div class="content">${messageContent}</div>
+            `;
+        } else {
+            newMessage.innerHTML = `
+                <span class="other-username">${username}</span> 
+                <span class="timestamp">${timestamp} :</span>
+                <div class="content">${messageContent}</div>
+            `;
+        }
+            // Ajouter le nouveau message dans le chat log
+            chatLog.appendChild(newMessage);
+
+            // Faire défiler le chat vers le bas
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+    };
+
+    // Envoi du message pour le chat public lors de l'appui sur "Enter" ou le bouton "Envoyer"
+    document.querySelector('#chatMessageInput').onkeyup = function(e) {
+        if (e.keyCode === 13) {
+            document.querySelector('#sendMessageBtn').click();
+        }
+    };
+
+    document.querySelector('#sendMessageBtn').onclick = function(e) {
+        const messageInputDom = document.querySelector('#chatMessageInput');
+        const message = messageInputDom.value.trim();
+
+        // Envoyer le message via WebSocket pour le chat public
+        if (message) {
+            chatSocket.send(JSON.stringify({
+                'message': message  // Seul le message est envoyé, l'utilisateur est inclus côté serveur
+            }));
+            messageInputDom.value = '';  // Vider le champ de message après envoi
+        }
+    };
+
+    // Envoi du message pour le chat privé (lorsque l'utilisateur clique sur "Envoyer")
+    document.querySelector('#sendPrivateMessageBtn').onclick = function(e) {
+        const messageInputDom = document.querySelector('#privateChatMessageInput');
+        const message = messageInputDom.value.trim();
+
+        if (message && activePrivateChatUser) {
+            // Logique d'envoi du message privé via WebSocket ou autre méthode (exemple à compléter)
+            console.log(`Envoi du message privé à ${activePrivateChatUser}: ${message}`);
+
+            // Afficher le message dans la fenêtre de chat privée
+            const newMessage = document.createElement('div');
+            newMessage.classList.add('message');
+            newMessage.innerHTML = `<strong>Moi:</strong> ${message}`;
+            privateChatMessages.appendChild(newMessage);
+
+            // Vider le champ de message après envoi
+            messageInputDom.value = '';
+        }
+    };
+
+    // Envoi du message privé avec la touche "Enter"
+    document.querySelector('#privateChatMessageInput').onkeyup = function(e) {
+        if (e.keyCode === 13) {
+            document.querySelector('#sendPrivateMessageBtn').click();
+        }
+    };
+
+
+    
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const privateChatMessages = document.getElementById('privateChatMessages');
+        let activePrivateChatUser = null;  // L'utilisateur avec qui on discute en privé
+
+        
+
+        // Ajouter un écouteur d'événement pour chaque utilisateur dans la liste (pour chat privé)
+        document.querySelectorAll('.user-item').forEach(function(userItem) {
+            userItem.addEventListener('click', function() {
+                const selectedUsername = this.dataset.username;
+
+                // Définir l'utilisateur actuellement sélectionné
+                activePrivateChatUser = selectedUsername;
+
+                // Afficher la boîte de dialogue privée pour cet utilisateur
+                privateChatMessages.innerHTML = `<h5>Chat avec ${selectedUsername}</h5>`;
+                // Ouvrir une connexion WebSocket pour le chat privé avec cet utilisateur
+                openPrivateChat(selectedUsername);
+            });
+        });
+
+
+        function formatMessageContent(message) {
+            return message.replace(/\n/g, '<br>');
+        }
+
+        // Fonction pour ouvrir une connexion WebSocket pour le chat privé
+        function openPrivateChat(username) {
+            const privateChatSocket = new WebSocket('ws://' + window.location.host + '/ws/private_chat/' + username + '/');
+
+            // Lorsqu'un nouveau message est reçu via WebSocket (pour le chat privé)
+            privateChatSocket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                const newMessage = document.createElement('div');
+                newMessage.classList.add('message');
+
+                const messageParts = data.message.split(":");
+                if (messageParts.length >= 2) {
+                    const sender = messageParts[0].trim();
+                    const messageContent = formatMessageContent(messageParts.slice(1).join(":").trim());  // Utiliser la fonction ici
+                    const timestamp = data.timestamp || 'Heure non définie';  // Récupérer le timestamp
+
+                    // Créer une structure avec trois parties : username, timestamp et message content
+                    if (sender === "{{ user.username }}") {
+                        newMessage.innerHTML = `
+                            <span class="username">Moi</span> 
+                            <span class="timestamp">${timestamp} :</span>
+                            <div class="content">${messageContent}</div>
+                        `;
+                    } else {
+                        newMessage.innerHTML = `
+                            <span class="other-username">${sender}</span> 
+                            <span class="timestamp">${timestamp} :</span>
+                            <div class="content">${messageContent}</div>
+                        `;
+                    }
+
+                    privateChatMessages.appendChild(newMessage);
+                    privateChatMessages.scrollTop = privateChatMessages.scrollHeight;  // Faire défiler vers le bas
+                }
+            };
+
+            // Envoi du message pour le chat privé lors de l'appui sur "Enter" ou le bouton "Envoyer"
+            document.querySelector('#privateChatMessageInput').onkeyup = function(e) {
+                if (e.keyCode === 13) {
+                    document.querySelector('#sendPrivateMessageBtn').click();
+                }
+            };
+
+            document.querySelector('#sendPrivateMessageBtn').onclick = function(e) {
+                const messageInputDom = document.querySelector('#privateChatMessageInput');
+                const message = messageInputDom.value.trim();
+
+                if (message && activePrivateChatUser) {
+                    // Envoyer le message via WebSocket sans l'afficher manuellement
+                    privateChatSocket.send(JSON.stringify({
+                        'message': message
+                    }));
+
+                    // Vider le champ de message après envoi
+                    messageInputDom.value = '';
+                }
+            };
+        }
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const publicChatBody = document.getElementById('publicChatBody');
+    const privateChatBody = document.getElementById('privateChatBody');
+    const publicChatFooter = document.getElementById('publicChatFooter');
+    const privateChatFooter = document.getElementById('privateChatFooter');
+    const publicChatBtn = document.getElementById('publicChatBtn');
+    const privateChatBtn = document.getElementById('privateChatBtn');
+
+    // Fonction pour ajuster la hauteur du chat privé en fonction de l'affichage du footer
+    function adjustPrivateChatHeight() {
+        if (privateChatFooter.style.display === 'block') {
+            privateChatBody.style.height = 'calc(100% - 100px)';  // Ajustez la hauteur selon vos besoins
+        } else {
+            privateChatBody.style.height = '100%';  // Maximiser la hauteur si le footer est masqué
+        }
+    }
+
+    // Affichage du chat public par défaut
+    publicChatBtn.addEventListener('click', function() {
+        publicChatBody.style.display = 'block';
+        privateChatBody.style.display = 'none';
+        publicChatFooter.style.display = 'block';   // Afficher le footer du chat public
+        privateChatFooter.style.display = 'none';   // Masquer le footer du chat privé
+        privateChatBody.style.height = 'calc(100% - 100px)';  // Ajuster la hauteur si le footer est visible
+    });
+
+    // Affichage du chat privé
+    privateChatBtn.addEventListener('click', function() {
+        publicChatBody.style.display = 'none';
+        privateChatBody.style.display = 'block';
+        publicChatFooter.style.display = 'none';    // Masquer le footer du chat public
+        privateChatFooter.style.display = 'block';  // Afficher le footer du chat privé
+        adjustPrivateChatHeight();  // Ajuster la hauteur du chat privé
+    });
+
+    // Envoi du message pour le chat public avec gestion de "Shift + Entrée" pour retour à la ligne
+    document.querySelector('#chatMessageInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();  // Empêche le saut de ligne
+            document.querySelector('#sendMessageBtn').click();  // Envoie le message
+        }
+    });
+
+    // Envoi du message privé avec gestion de "Shift + Entrée" pour retour à la ligne
+    document.querySelector('#privateChatMessageInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();  // Empêche le saut de ligne
+            document.querySelector('#sendPrivateMessageBtn').click();  // Envoie le message
+        }
+    });
+
+
+    // Sélectionnez l'onglet Public par défaut au chargement
+    publicChatBtn.click();
+});
+
+</script>
+
+{% endblock %}
+
+

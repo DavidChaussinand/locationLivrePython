@@ -206,10 +206,11 @@ def livre_detail(request, livre_id):
 
 
 
-
 def forum_view(request):
-        topics = Topic.objects.all()
-        return render(request, 'main/forum.html', {'topics': topics})
+    topics = Topic.objects.all()
+    users = User.objects.exclude(id=request.user.id)
+    return render(request, 'main/forum.html', {'topics': topics, 'users': users})
+
     
 def topic_detail(request, topic_id):
     topic = get_object_or_404(Topic, id=topic_id)

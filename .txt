@@ -38,3 +38,26 @@ git push origin main
 
 netstat -ano | findstr :6379
 taskkill /PID <PID> /F
+
+
+pour faire un tchat :  
+     pip install daphne
+     pip install channels
+     pip install channels-redis
+     pip install celery
+
+
+     lancer : daphne -b 0.0.0.0 -p 8001 mybookrental.asgi:application  et aller sur http://localhost:8000
+
+              redis-server
+
+
+
+Moi: Salut (2024-10-04 15:32:21)
+lulu: Bonjour (2024-10-04 15:33:05)
+
+
+Moi (2024-10-04 15:32:21) :
+    Salut
+lulu (2024-10-04 15:33:05) :
+    Bonjour 
