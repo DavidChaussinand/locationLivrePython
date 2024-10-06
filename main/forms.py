@@ -195,3 +195,6 @@ class InscriptionForm(forms.ModelForm):
             self.fields['nom'].initial = utilisateur.first_name
             self.fields['prenom'].initial = utilisateur.last_name
             self.fields['email'].initial = utilisateur.email
+
+
+

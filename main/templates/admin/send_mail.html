@@ -1,0 +1,15 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+  <h1>Envoyer un e-mail aux utilisateurs sélectionnés</h1>
+  <form action="" method="post">{% csrf_token %}
+    {{ form.as_p }}
+    {% for user in users %}
+      <input type="hidden" name="{{ ACTION_CHECKBOX_NAME }}" value="{{ user.pk }}">
+    {% endfor %}
+    <input type="hidden" name="action" value="{{ action }}">
+    <input type="hidden" name="select_across" value="0">
+    <input type="submit" name="apply" value="Envoyer l'e-mail">
+  </form>
+{% endblock %}

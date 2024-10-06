@@ -52,12 +52,3 @@ pour faire un tchat :
               redis-server
 
 
-
-Moi: Salut (2024-10-04 15:32:21)
-lulu: Bonjour (2024-10-04 15:33:05)
-
-
-Moi (2024-10-04 15:32:21) :
-    Salut
-lulu (2024-10-04 15:33:05) :
-    Bonjour 
