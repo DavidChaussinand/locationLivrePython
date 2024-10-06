@@ -27,8 +27,8 @@ pour la gestion en directe des status et disponibilité ouvrir un terminal pour 
 
 commande pour les tags
 git tag
-git tag -a v1.45 -m "Version 1.45 :mise en place d'un carousel pour afficher les best seller"
-git push origin v1.45
+git tag -a v1.80 -m " version 1.80: mise en place d'une fonctionnalité permettant à l'admin de générer un email à l'ensemble de ses users ou certains users : exemple : pour une info ou promo par email "
+git push origin v1.80
 
 
 git status
