@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from .forms import SignUpForm , EmailLoginForm , ContactForm , CommentaireForm ,MessageForm, LocationForm , ProlongationLocationForm , InscriptionForm
 from django.contrib.auth.views import PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
 from django.core.mail import send_mail
-from .models import Livre , Commentaire ,Topic, Message , Location, Evenement
+from .models import Livre , Commentaire ,Topic, Message , Location, Evenement , Profile
 from django.db.models import Q
 from datetime import datetime
 from django.utils import timezone
@@ -24,6 +24,7 @@ from datetime import timedelta
 import logging
 from celery.result import AsyncResult
 from django.conf import settings
+
 
 from .tasks import send_reminder_email
 
@@ -71,13 +72,18 @@ def signup_view(request):
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
+            
+            # Spécifier explicitement le backend lors de la connexion
+            backend = 'django.contrib.auth.backends.ModelBackend'  # Utiliser le backend par défaut ou un autre backend si nécessaire
+            login(request, user, backend=backend)
+            
             messages.success(request, 'Votre compte a été créé avec succès !')
-            login(request, user)  # Connecte automatiquement l'utilisateur après l'inscription
             return redirect('home')
         else:
             messages.error(request, 'Veuillez corriger les erreurs ci-dessous.')
     else:
         form = SignUpForm()
+    
     return render(request, 'main/signup.html', {'form': form})
 
 # Vue pour la déconnexion
@@ -210,8 +216,18 @@ def livre_detail(request, livre_id):
 def forum_view(request):
     topics = Topic.objects.all()
     users = User.objects.exclude(id=request.user.id)
-    return render(request, 'main/forum.html', {'topics': topics, 'users': users})
-
+    
+    # Créer une liste associant chaque utilisateur à son profil et son statut is_connect
+    user_profiles = []
+    for user in users:
+        profile = Profile.objects.filter(user=user).first()  # Utiliser filter pour éviter les erreurs
+        user_profiles.append({'user': user, 'is_connect': profile.is_connect if profile else False})
+    
+    return render(request, 'main/forum.html', {
+        'topics': topics,
+        'user_profiles': user_profiles,  # Cette liste contient les utilisateurs et leur statut
+        'users': users  # On passe également les utilisateurs pour conserver la structure du template
+    })
     
 def topic_detail(request, topic_id):
     topic = get_object_or_404(Topic, id=topic_id)
@@ -236,58 +252,6 @@ def topic_detail(request, topic_id):
 
 
 
-logger = logging.getLogger(__name__)
-
-@login_required
-def location_livre(request, livre_id):
-    livre = get_object_or_404(Livre, id=livre_id)
-
-    if request.method == 'POST':
-        if not livre.disponible:
-            messages.error(request, "Le livre n'est pas disponible pour le moment.")
-            return redirect('livre_detail', livre_id=livre.id)
-
-        # Créer la location
-        location = Location.objects.create(
-            user=request.user,
-            livre=livre,
-            date_debut=timezone.now(),
-            date_fin=timezone.now() + timedelta(days=7),  # Location de 7 jours
-            statut='En cours',
-        )
-
-        # Rendre le livre indisponible
-        livre.disponible = False
-        livre.save()
-
-        # Envoyer un e-mail à l'administrateur pour l'avertir de la réservation
-        sujet = f"Réservation du livre : {livre.titre}"
-        message = (
-            f"Le livre '{livre.titre}' a été réservé par {request.user.get_full_name()} ({request.user.email}).\n\n"
-            f"Date de début : {location.date_debut.strftime('%d/%m/%Y')}\n"
-            f"Date de fin : {location.date_fin.strftime('%d/%m/%Y')}\n\n"
-            "Cordialement,\n"
-            "Le système de gestion des réservations"
-        )
-        admin_email = settings.DEFAULT_FROM_EMAIL  # Adresse e-mail de l'administrateur
-
-        try:
-            result = send_mail(
-                sujet,
-                message,
-                settings.DEFAULT_FROM_EMAIL,  # Adresse e-mail d'envoi
-                [admin_email],  # Liste des destinataires (ici l'administrateur)
-                fail_silently=False,
-            )
-            logger.info(f"E-mail de réservation envoyé avec succès. Résultat de send_mail : {result}")
-        except Exception as e:
-            logger.error(f"Erreur lors de l'envoi de l'e-mail : {e}")
-            messages.error(request, f"Une erreur est survenue lors de l'envoi de l'e-mail : {e}")
-
-        messages.success(request, "Le livre a été réservé avec succès.")
-        return redirect('profile')
-
-    return render(request, 'main/location_livre.html', {'livre': livre})
 
 
 
@@ -296,7 +260,8 @@ def reserver_livre(request, livre_id):
     livre = get_object_or_404(Livre, id=livre_id)
     if not livre.disponible:
         messages.error(request, "Ce livre n'est pas disponible.")
-        return redirect('livres')
+        return redirect('livre_detail', livre_id=livre.id)  # Assurez-vous que c'est bien la bonne redirection
+
 
     if request.method == 'POST':
         form = LocationForm(request.POST)

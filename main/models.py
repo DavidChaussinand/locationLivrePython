@@ -171,3 +171,6 @@ class MessageTchat(models.Model):
         return f'{self.user.username}: {self.content}'
     
 
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    is_connect = models.BooleanField(default=False)  # Champ pour indiquer si l'utilisateur est connecté ou non

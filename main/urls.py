@@ -24,7 +24,7 @@ urlpatterns = [
     path('forum/', views.forum_view, name='forum'),
     path('forum/topic/<int:topic_id>/', views.topic_detail, name='topic_detail'),
     
-    path('livres/location/<int:livre_id>/', views.location_livre, name='location_livre'),
+   
     path('annuler_location/<int:location_id>/', views.annuler_location, name='annuler_location'),
     path('reservation/<int:livre_id>/', views.reserver_livre, name='reservation_livre'),
     path('prolonger_location/<int:location_id>/', views.prolonger_location, name='prolonger_location'),

@@ -42,8 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'main',
-    'channels'
+    'channels',
+    'main.apps.MainConfig',
 ]
 
 ASGI_APPLICATION = 'mybookrental.asgi.application'
@@ -188,18 +188,6 @@ EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS')
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')
-
-# Ajoutez ceci pour vérifier les valeurs lors du démarrage
-print(f"EMAIL_BACKEND: {EMAIL_BACKEND}")
-print(f"EMAIL_HOST: {EMAIL_HOST}")
-print(f"EMAIL_PORT: {EMAIL_PORT}")
-print(f"EMAIL_USE_TLS: {EMAIL_USE_TLS}")
-print(f"EMAIL_HOST_USER: {EMAIL_HOST_USER}")
-print(f"DEFAULT_FROM_EMAIL: {DEFAULT_FROM_EMAIL}")
-
-
-
-
 
 
 

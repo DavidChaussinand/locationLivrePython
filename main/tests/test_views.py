@@ -1,10 +1,12 @@
 import pytest
 from django.contrib.auth.models import User
 from django.urls import reverse
-from django.utils import timezone
+from django.utils import timezone 
 from django.core import mail
 from main.models import Livre , Location
 from django.contrib.messages import get_messages
+from datetime import timedelta
+
 
 from unittest.mock import patch
 
@@ -95,7 +97,7 @@ def user(db):
 
 @pytest.mark.django_db
 @patch('main.views.send_reminder_email.apply_async')
-def test_location_livre_reservation_success(mock_apply_async, client, user):
+def test_reservation_livre_success(mock_apply_async, client, user):
     # Configurer la valeur de retour de mock_apply_async pour simuler un ID de tâche
     mock_apply_async.return_value.id = "mock_task_id"
 
@@ -104,10 +106,14 @@ def test_location_livre_reservation_success(mock_apply_async, client, user):
 
     # Simuler une requête POST pour réserver le livre
     client.force_login(user)
-    response = client.post(reverse('location_livre', args=[livre.id]))
+    response = client.post(reverse('reservation_livre', args=[livre.id]), {
+        'date_debut': timezone.now(),  # Ajouter les champs nécessaires ici
+        'date_fin': (timezone.now() + timedelta(days=7)),  # Exemple de champ date_fin
+    })
 
     # Vérifier que la réservation a réussi
     assert response.status_code == 302  # Redirige vers le profil
+    assert response.url == reverse('profile')  # Vérifier la redirection vers le profil
     livre.refresh_from_db()
     assert not livre.disponible  # Le livre est devenu indisponible
 
@@ -118,14 +124,16 @@ def test_location_livre_reservation_success(mock_apply_async, client, user):
     assert location.reminder_task_id == "mock_task_id"  # Vérifier que l'ID de la tâche est correctement enregistré
 
 
+
+
 @pytest.mark.django_db
-def test_location_livre_non_disponible(client, user):
+def test_reservation_livre_non_disponible(client, user):
     # Créer un livre non disponible
     livre = Livre.objects.create(titre="Mon Livre", date_publication=timezone.now(), disponible=False)
 
     # Simuler une requête POST pour réserver le livre
     client.force_login(user)
-    response = client.post(reverse('location_livre', args=[livre.id]))
+    response = client.post(reverse('reservation_livre', args=[livre.id]))
 
     # Vérifier que l'utilisateur est redirigé car le livre n'est pas disponible
     assert response.status_code == 302
