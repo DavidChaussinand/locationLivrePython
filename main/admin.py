@@ -78,24 +78,29 @@ class CustomUserAdmin(DefaultUserAdmin):
             form = EmailForm(request.POST)
             if form.is_valid():
                 sujet = form.cleaned_data['sujet']
-                message = form.cleaned_data['message']
-                destinataires = [user.email for user in queryset if user.email]
-                if destinataires:
-                    send_mail(
-                        sujet,
-                        message,
-                        settings.DEFAULT_FROM_EMAIL,
-                        destinataires,
-                        fail_silently=False,
-                    )
-                    self.message_user(request, "Les e-mails ont été envoyés avec succès !")
-                else:
-                    self.message_user(
-                        request,
-                        "Aucun e-mail valide trouvé parmi les utilisateurs sélectionnés.",
-                        level=messages.WARNING
-                    )
-                return redirect(request.get_full_path())
+                message_template = form.cleaned_data['message']  # Utiliser un template pour le message principal
+                
+                for user in queryset:
+                    if user.email:  # Vérifier que l'utilisateur a un e-mail
+                        # Personnaliser le message pour chaque utilisateur avec son prénom ou nom
+                        message = f"Bonjour {user.first_name},\n\n{message_template}\n\nCordialement,\nDavid CHAUSSINAND"
+                        
+                        # Envoyer l'e-mail personnalisé à cet utilisateur
+                        send_mail(
+                            sujet,
+                            message,
+                            settings.DEFAULT_FROM_EMAIL,
+                            [user.email],  # Envoyer à une adresse e-mail à la fois
+                            fail_silently=False,
+                        )
+                self.message_user(request, "Les e-mails ont été envoyés avec succès !")
+            else:
+                self.message_user(
+                    request,
+                    "Aucun e-mail valide trouvé parmi les utilisateurs sélectionnés.",
+                    level=messages.WARNING
+                )
+            return redirect(request.get_full_path())
         else:
             form = EmailForm()
         context = {
